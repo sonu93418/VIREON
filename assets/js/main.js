@@ -472,3 +472,27 @@ window.openPopup      = openPopup;
 window.closePopup     = closePopup;
 window.toggleFaq      = toggleFaq;
 window.closeMobileMenu = closeMobileMenu;
+
+/* ================================================================
+   COURSE TABS
+   ================================================================ */
+function switchCourseTab(category) {
+  // Deactivate all tabs
+  document.querySelectorAll('.course-tab').forEach(tab => {
+    tab.classList.remove('active');
+    tab.setAttribute('aria-selected', 'false');
+  });
+  // Deactivate all panels
+  document.querySelectorAll('.course-panel').forEach(panel => {
+    panel.classList.remove('active');
+  });
+
+  // Activate selected tab + panel
+  const activeTab   = document.getElementById('tab-' + category);
+  const activePanel = document.getElementById('panel-' + category);
+
+  if (activeTab)   { activeTab.classList.add('active');   activeTab.setAttribute('aria-selected', 'true'); }
+  if (activePanel) { activePanel.classList.add('active'); }
+}
+
+window.switchCourseTab = switchCourseTab;
