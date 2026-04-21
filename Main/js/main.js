@@ -38,7 +38,7 @@ function initNavbar() {
 
   // Update active nav link based on scroll
   function updateActiveLink() {
-    const sections = ['home', 'programs', 'placements', 'leadership', 'contact'];
+    const sections = ['home', 'programs', 'placements', 'gallery', 'leadership', 'contact'];
     const scrollY  = window.scrollY + 100;
 
     let current = 'home';
@@ -197,6 +197,7 @@ function initCounterAnimations() {
    TESTIMONIALS SLIDER
    ================================================================ */
 function initTestimonialsSlider() {
+  const slider   = document.querySelector('.testimonials-slider');
   const track    = document.getElementById('testimonials-track');
   const dotsWrap = document.getElementById('tnav-dots');
   const prevBtn  = document.getElementById('tprev');
@@ -204,83 +205,156 @@ function initTestimonialsSlider() {
 
   if (!track) return;
 
-  const cards        = track.querySelectorAll('.testimonial-card');
-  const total        = cards.length;
-  let   current      = 0;
-  let   autoTimer    = null;
-  let   perView      = getPerView();
+  const cards      = Array.from(track.querySelectorAll('.testimonial-card'));
+  const total      = cards.length;
+  let   current    = 0;
+  let   autoTimer  = null;
+  let   mobileMode = false;
+  let   resizeTimer = null;
 
-  // Build dots
-  const numSlides = total - perView + 1;
-  for (let i = 0; i < Math.max(numSlides, 1); i++) {
-    const dot = document.createElement('span');
-    dot.className = 'tnav-dot' + (i === 0 ? ' active' : '');
-    dot.setAttribute('aria-label', `Go to testimonial ${i + 1}`);
-    dot.addEventListener('click', () => goTo(i));
-    dotsWrap.appendChild(dot);
-  }
+  /* ── Helpers ── */
+  function isMobileBreak() { return window.innerWidth <= 768; }
 
   function getPerView() {
-    return window.innerWidth <= 768 ? 1 : window.innerWidth <= 1024 ? 2 : 3;
+    if (isMobileBreak()) return 1;
+    return window.innerWidth <= 1024 ? 2 : 3;
   }
 
+  /* ══════════════════════════════════════════
+     MOBILE — stacked vertical cards, no slider
+     ══════════════════════════════════════════ */
+  function setupMobile() {
+    mobileMode = true;
+    clearInterval(autoTimer);
+
+    track.style.transform     = 'none';
+    track.style.flexDirection = 'column';
+    track.style.gap           = '16px';
+    track.style.transition    = 'none';
+
+    cards.forEach(c => {
+      c.style.minWidth   = '';
+      c.style.width      = '100%';
+      c.style.flexShrink = '0';
+    });
+
+    if (prevBtn)  prevBtn.style.display  = 'none';
+    if (nextBtn)  nextBtn.style.display  = 'none';
+    if (dotsWrap) {
+      dotsWrap.style.display = 'none';
+      dotsWrap.innerHTML     = '';
+    }
+  }
+
+  /* ══════════════════════════════════════════
+     DESKTOP — horizontal JS transform slider
+     ══════════════════════════════════════════ */
+  function setupDesktop() {
+    mobileMode = false;
+    clearInterval(autoTimer);
+
+    track.style.flexDirection = '';
+    track.style.gap           = '';
+    track.style.transition    = '';
+
+    if (prevBtn)  prevBtn.style.display  = '';
+    if (nextBtn)  nextBtn.style.display  = '';
+    if (dotsWrap) dotsWrap.style.display = '';
+
+    const pv        = getPerView();
+    const numSlides = Math.max(total - pv + 1, 1);
+
+    /* rebuild dots */
+    dotsWrap.innerHTML = '';
+    for (let i = 0; i < numSlides; i++) {
+      const dot = document.createElement('span');
+      dot.className = 'tnav-dot' + (i === 0 ? ' active' : '');
+      dot.setAttribute('aria-label', `Go to testimonial ${i + 1}`);
+      dot.addEventListener('click', () => goTo(i));
+      dotsWrap.appendChild(dot);
+    }
+
+    updateCardWidths();
+    goTo(0);
+    startAuto();
+  }
+
+  /* ── Desktop helpers ── */
   function updateCardWidths() {
-    perView = getPerView();
-    const gapPx = 24;
-    const containerW = track.parentElement.offsetWidth;
-    const cardW = (containerW - gapPx * (perView - 1)) / perView;
-    cards.forEach(c => { c.style.minWidth = cardW + 'px'; });
+    if (mobileMode) return;
+    const pv         = getPerView();
+    const gapPx      = 24;
+    const containerW = slider ? slider.offsetWidth : track.parentElement.offsetWidth;
+    const cardW      = (containerW - gapPx * (pv - 1)) / pv;
+    cards.forEach(c => {
+      c.style.minWidth = cardW + 'px';
+      c.style.width    = cardW + 'px';
+    });
   }
 
   function goTo(idx) {
-    const maxIdx = Math.max(0, total - perView);
-    current = Math.min(Math.max(idx, 0), maxIdx);
-    const cardW = cards[0].offsetWidth + 24; // +gap
+    if (mobileMode) return;
+    const pv     = getPerView();
+    const maxIdx = Math.max(0, total - pv);
+    current      = Math.min(Math.max(idx, 0), maxIdx);
+    updateCardWidths();
+    const cardW  = cards[0].offsetWidth + 24; // card width + gap
     track.style.transform = `translateX(-${current * cardW}px)`;
-
-    // Update dots
-    dotsWrap.querySelectorAll('.tnav-dot').forEach((d, i) => {
-      d.classList.toggle('active', i === current);
-    });
+    if (dotsWrap) {
+      dotsWrap.querySelectorAll('.tnav-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === current);
+      });
+    }
   }
 
   function next() { goTo(current + 1); }
   function prev() { goTo(current - 1); }
 
-  prevBtn.addEventListener('click', () => { prev(); resetAuto(); });
-  nextBtn.addEventListener('click', () => { next(); resetAuto(); });
-
   function startAuto() {
-    autoTimer = setInterval(() => { goTo((current + 1) % (total - perView + 1)); }, 4500);
+    if (mobileMode) return;
+    const pv = getPerView();
+    autoTimer = setInterval(() => {
+      if (mobileMode) { clearInterval(autoTimer); return; }
+      goTo((current + 1) % (total - pv + 1));
+    }, 4500);
   }
+
   function resetAuto() { clearInterval(autoTimer); startAuto(); }
 
-  // Touch/swipe
+  /* ── Button events ── */
+  if (prevBtn) prevBtn.addEventListener('click', () => { prev(); resetAuto(); });
+  if (nextBtn) nextBtn.addEventListener('click', () => { next(); resetAuto(); });
+
+  /* ── Touch / swipe (desktop only) ── */
   let touchStartX = 0;
-  track.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
-  track.addEventListener('touchend',   (e) => {
+  track.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+  }, { passive: true });
+  track.addEventListener('touchend', e => {
+    if (mobileMode) return;
     const diff = touchStartX - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); resetAuto(); }
   });
 
+  /* ── Resize — debounced, switches mode ── */
   window.addEventListener('resize', () => {
-    updateCardWidths();
-    goTo(0);
-    clearInterval(autoTimer);
-    dotsWrap.innerHTML = '';
-    const ns = total - getPerView() + 1;
-    for (let i = 0; i < Math.max(ns, 1); i++) {
-      const dot = document.createElement('span');
-      dot.className = 'tnav-dot' + (i === 0 ? ' active' : '');
-      dot.addEventListener('click', () => goTo(i));
-      dotsWrap.appendChild(dot);
-    }
-    startAuto();
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (isMobileBreak()) {
+        if (!mobileMode) setupMobile();
+      } else {
+        current = 0;
+        setupDesktop();
+      }
+    }, 200);
   });
 
-  updateCardWidths();
-  goTo(0);
-  startAuto();
+  /* ── Initial setup ── */
+  if (isMobileBreak()) {
+    setupMobile();
+  } else {
+    setupDesktop();
+  }
 }
 
 /* ================================================================
@@ -468,9 +542,9 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ================================================================
    EXPOSE GLOBALS (for inline onclick handlers)
    ================================================================ */
-window.openPopup      = openPopup;
-window.closePopup     = closePopup;
-window.toggleFaq      = toggleFaq;
+window.openPopup       = openPopup;
+window.closePopup      = closePopup;
+window.toggleFaq       = toggleFaq;
 window.closeMobileMenu = closeMobileMenu;
 
 /* ================================================================
