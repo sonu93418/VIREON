@@ -179,7 +179,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .ticker-bar {
   background: linear-gradient(90deg, #065C2B 0%, #0A7C3A 40%, #0D9445 60%, #065C2B 100%);
   color: var(--white);
-  height: 40px;
+  height: var(--ticker-h);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -194,6 +194,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .ticker-track {
   display: flex;
   align-items: center;
+  height: 100%;
   white-space: nowrap;
   animation: ticker-rtl 60s linear infinite;
   will-change: transform;
@@ -2392,14 +2393,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
   .nav-inner { padding: 0 16px; }
 
-  .nav-logo {
-    height: 100%;
-    align-items: center;
-    padding: 6px 0;
-    flex-shrink: 0;
-  }
+  .nav-logo { height: auto; align-items: center; padding: 0; flex-shrink: 0; }
   .nav-logo-img-wrap {
-    height: auto;
+    height: 46px;
     padding: 5px 12px;
     border-radius: 8px;
     display: flex;
@@ -2574,8 +2570,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
   /* Navbar — keep logo full height */
   /* Navbar logo — smaller on small phones */
-  .nav-logo { padding: 4px 0; }
-  .nav-logo-img-wrap { padding: 4px 10px; border-radius: 7px; }
+  .nav-logo { padding: 0; }
+  .nav-logo-img-wrap { height: 42px; padding: 4px 10px; border-radius: 7px; }
   .nav-logo-img-wrap img {
     height: 36px;
     width: auto;
@@ -2704,8 +2700,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     --header-total: 86px;
   }
 
-  .nav-logo { padding: 3px 0; }
-  .nav-logo-img-wrap { padding: 3px 8px; border-radius: 6px; }
+  .nav-logo { padding: 0; }
+  .nav-logo-img-wrap { height: 38px; padding: 3px 8px; border-radius: 6px; }
   .nav-logo-img-wrap img {
     height: 32px;
     width: auto;
