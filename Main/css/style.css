@@ -811,10 +811,14 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
    PARTNER LOGOS GRID
    ════════════════════════════════════════ */
 .cert-logos-track-wrap {
-  width: 100%;
-  overflow-x: auto;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  overflow: hidden;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+  position: relative;
+  padding: 0 24px;
 }
 
 .cert-logos-track {
@@ -824,7 +828,17 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   gap: 30px;
   flex-wrap: nowrap;
   width: max-content;
-  margin: 0 auto;
+  margin: 0;
+  animation: cert-logos-scroll 28s linear infinite;
+}
+
+.cert-logos-track-wrap:hover .cert-logos-track {
+  animation-play-state: paused;
+}
+
+@keyframes cert-logos-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 /* Individual logo card */
@@ -833,7 +847,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  flex: 0 1 190px;
+  flex: 0 0 190px;
   cursor: default;
   transition: var(--transition);
 }
@@ -906,8 +920,10 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
+  .cert-logos-track-wrap { padding: 0 16px; }
+  .cert-logos-track { animation-duration: 24s; }
   .cert-logos-track { gap: 22px; }
-  .cert-logo-item { flex: 0 1 152px; }
+  .cert-logo-item { flex: 0 0 152px; }
   .cert-logo-img-wrap { width: 132px; height: 132px; padding: 12px; }
   .cert-featured-img-wrap { width: 170px; height: 170px; }
   .cert-featured-glow { width: 220px; height: 220px; }
@@ -915,8 +931,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 @media (max-width: 640px) {
   .cert-section { padding: 52px 0 60px; }
+  .cert-logos-track { animation-duration: 20s; }
   .cert-logos-track { gap: 16px; }
-  .cert-logo-item { flex: 0 1 128px; }
+  .cert-logo-item { flex: 0 0 128px; }
   .cert-logo-img-wrap { width: 112px; height: 112px; padding: 10px; border-radius: 16px; }
   .cert-logo-name { font-size: 0.68rem; }
   .cert-featured-img-wrap { width: 150px; height: 150px; }
@@ -924,7 +941,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 
 @media (max-width: 420px) {
-  .cert-logo-item { flex: 0 1 108px; }
+  .cert-logo-item { flex: 0 0 108px; }
   .cert-logo-img-wrap { width: 94px; height: 94px; padding: 8px; }
 }
 
